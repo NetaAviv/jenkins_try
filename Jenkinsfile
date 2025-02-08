@@ -6,7 +6,7 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')  // Ensure this matches the Jenkins credentials ID
         AWS_DEFAULT_REGION = 'us-east-1'
         EC2_USER = 'ec2-user'  // Change based on your EC2 AMI (e.g., ubuntu for Ubuntu AMIs)
-        EC2_HOST = 44.203.66.201  // Replace with your EC2 instance's public IP
+        EC2_HOST = '44.203.66.201'  // Replace with your EC2 instance's public IP
         SSH_KEY = credentials('EC2_SSH_PRIVATE_KEY')  // Store EC2 SSH key in Jenkins credentials
     }
     stages {
