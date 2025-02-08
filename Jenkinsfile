@@ -3,8 +3,8 @@ pipeline {
     environment {
         AWS_ECR_URI = '767828746131.dkr.ecr.us-east-1.amazonaws.com/netaproject/firstproject'
         AWS_DEFAULT_REGION = 'us-east-1'
-        EC2_USER = 'ec2-user'
-        EC2_HOST = '44.203.66.201'
+        EC2_USER = 'ec2-user'  // Change to 'ubuntu' if using an Ubuntu AMI
+        EC2_HOST = '44.203.66.201'  // Replace with your EC2 public IP
     }
     stages {
         stage('Checkout') {
@@ -29,7 +29,7 @@ pipeline {
                         sh '''
                             export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                            export AWS_DEFAULT_REGION="us-east-1"  # Explicitly set region
+                            export AWS_DEFAULT_REGION="us-east-1"
 
                             echo "Logging into AWS ECR..."
                             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $AWS_ECR_URI
@@ -51,15 +51,23 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 withCredentials([
-                    sshUserPrivateKey(credentialsId: 'EC2_SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY')
+                    sshUserPrivateKey(credentialsId: 'EC2_SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY'),
+                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     script {
                         sh '''
                             ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_HOST << 'EOF'
-                            set -e  # Exit on error
+                            set -e  
 
-                            echo "Setting AWS credentials on EC2..."
-                            export AWS_DEFAULT_REGION="us-east-1"
+                            echo "Configuring AWS credentials..."
+                            mkdir -p ~/.aws
+                            echo "[default]" > ~/.aws/credentials
+                            echo "aws_access_key_id=$AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+                            echo "aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+
+                            echo "[default]" > ~/.aws/config
+                            echo "region=us-east-1" >> ~/.aws/config
 
                             echo "Logging into AWS ECR..."
                             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $AWS_ECR_URI
