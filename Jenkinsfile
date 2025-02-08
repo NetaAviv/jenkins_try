@@ -1,43 +1,38 @@
 pipeline {
     agent any
     environment {
-        AWS_REGION = 'us-east-1'
-        AWS_ACCOUNT_ID = '767828746131'
-        ECR_REPO_NAME = 'netaproject/firstproject' // Replace with your ECR repository name
+        AWS_ECR_URI = '767828746131.dkr.ecr.us-east-1.amazonaws.com/netaproject/firstproject'
     }
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                // Checkout the code from GitHub repository
-                git branch: 'main', url: 'https://github.com/NetaAviv/jenkins_try.git'
-            }
-        }
-        stage('Login to ECR') {
-            steps {
-                script {
-                    // Log in to AWS ECR using AWS CLI
-                    sh '''
-                        aws configure set region $AWS_REGION
-                        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-                    '''
-                }
+                checkout scm
             }
         }
         stage('Build Docker Image') {
             steps {
-                // Build your Docker image
-                sh '''
-                    docker build -t $ECR_REPO_NAME .
-                    docker tag $ECR_REPO_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:latest
-                '''
+                script {
+                    sh 'docker build -t flask-app .'
+                }
+            }
+        }
+        stage('Login to AWS ECR') {
+            steps {
+                script {
+                    sh '''
+                        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $AWS_ECR_URI
+                    '''
+                }
             }
         }
         stage('Push Docker Image to ECR') {
             steps {
-                // Push the Docker image to AWS ECR
-                sh '''
-                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:latest
-                '''
+                script {
+                    sh '''
+                        docker tag flask-app:latest $AWS_ECR_URI:latest
+                        docker push $AWS_ECR_URI:latest
+                    '''
+                }
             }
         }
     }
