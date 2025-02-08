@@ -2,8 +2,8 @@ pipeline {
     agent any
     environment {
         AWS_ECR_URI = '767828746131.dkr.ecr.us-east-1.amazonaws.com/netaproject/firstproject'
-        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')  // Use the actual Jenkins credential ID
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')  // Use the actual Jenkins credential ID
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')  // Ensure this matches the Jenkins credentials ID
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')  // Ensure this matches the Jenkins credentials ID
         AWS_DEFAULT_REGION = 'us-east-1'
     }
     stages {
@@ -20,8 +20,8 @@ pipeline {
                     sh 'ls -l'
                     // Ensure Dockerfile exists
                     sh 'ls -l Dockerfile'
-                    // Now attempt the build
-                    sh 'docker build -t jenkins_try .'
+                    // Build the correct image name
+                    sh 'docker build -t flask-app:latest .'
                 }
             }
         }
@@ -34,7 +34,7 @@ pipeline {
                 }
             }
         }
-        stage('Push Docker Image to ECR') {
+        stage('Tag and Push Docker Image to ECR') {
             steps {
                 script {
                     sh '''
