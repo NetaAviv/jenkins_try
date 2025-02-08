@@ -23,7 +23,7 @@ pipeline {
                 script {
                     // Log in to AWS ECR
                     sh '''
-                        $(aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com)
+                        $(aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 767828746131.dkr.ecr.us-east-1.amazonaws.com)
                     '''
                     
                     // Build the Docker image from the Dockerfile
