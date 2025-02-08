@@ -3,10 +3,10 @@ pipeline {
 
     environment {
         // Define the AWS region, ECR repository, and Docker image name
-        AWS_REGION = 'us-west-2'  // change to your AWS region
+        AWS_REGION = 'us-east-1'  // change to your AWS region
         ECR_REPOSITORY = 'my-flask-app-repo'  // change to your ECR repository name
         IMAGE_NAME = 'my-flask-app'  // change to your desired image name
-        AWS_ACCOUNT_ID = '123456789012'  // your AWS account ID
+        AWS_ACCOUNT_ID = '767828746131'// your AWS account ID
         DOCKER_TAG = 'latest'  // change to the desired image tag
     }
 
@@ -14,7 +14,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 // Checkout the GitHub repository
-                git branch: 'main', url: 'https://github.com/your-username/your-repo.git'  // Change the URL to your repo
+                git branch: 'main', url: 'https://github.com/NetaAviv/jenkins_try.git'  // Change the URL to your repo
             }
         }
 
