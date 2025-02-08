@@ -12,6 +12,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Show current directory and list files
+                    sh 'pwd'
+                    sh 'ls -l'
+                    // Ensure Dockerfile exists
+                    sh 'ls -l Dockerfile'
+                    // Now attempt the build
                     sh 'docker build -t jenkins_try .'
                 }
             }
