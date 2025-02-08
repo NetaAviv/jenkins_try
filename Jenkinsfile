@@ -2,8 +2,8 @@ pipeline {
     agent any
     environment {
         AWS_ECR_URI = '767828746131.dkr.ecr.us-east-1.amazonaws.com/netaproject/firstproject'
-        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')  // Correct Jenkins credentials ID for AWS Access Key
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')  
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')  // Use the actual Jenkins credential ID
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')  // Use the actual Jenkins credential ID
         AWS_DEFAULT_REGION = 'us-east-1'
     }
     stages {
