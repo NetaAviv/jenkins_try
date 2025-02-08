@@ -29,6 +29,8 @@ pipeline {
                         sh '''
                             export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                            export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+                            
                             aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ECR_URI
                         '''
                     }
@@ -47,14 +49,21 @@ pipeline {
         }
         stage('Deploy to EC2') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'EC2_SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY')]) {
+                withCredentials([
+                    sshUserPrivateKey(credentialsId: 'EC2_SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY'),
+                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
                     script {
                         sh '''
                             ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_HOST << 'EOF'
                             set -e  
 
                             echo "Logging into AWS ECR..."
-                            export AWS_DEFAULT_REGION="us-east-1"
+                            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                            export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+
                             aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ECR_URI
 
                             echo "Stopping existing container..."
