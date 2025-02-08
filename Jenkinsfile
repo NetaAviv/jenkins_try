@@ -40,4 +40,45 @@ pipeline {
             }
         }
 
-        stage('Push Docke
+        stage('Push Docker Image to ECR') {
+            steps {
+                script {
+                    sh '''
+                        docker tag flask-app:latest $AWS_ECR_URI:latest
+                        docker push $AWS_ECR_URI:latest
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'EC2_SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY')]) {
+                    script {
+                        sh '''
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_HOST << 'EOF'
+                            set -e  # Exit on error
+
+                            echo "Logging into AWS ECR..."
+                            export AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'
+                            export AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'
+                            export AWS_DEFAULT_REGION="us-east-1"
+                            aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ECR_URI
+
+                            echo "Stopping existing container..."
+                            docker stop flask-container || true
+                            docker rm flask-container || true
+
+                            echo "Pulling latest Docker image..."
+                            docker pull $AWS_ECR_URI:latest
+
+                            echo "Running new container..."
+                            docker run -d -p 5000:5000 --name flask-container $AWS_ECR_URI:latest
+                            EOF
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
