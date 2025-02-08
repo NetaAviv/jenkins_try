@@ -5,8 +5,8 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')  
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')  
         AWS_DEFAULT_REGION = 'us-east-1'
-        EC2_USER = 'ec2-user'  // Change based on your EC2 AMI (use 'ubuntu' for Ubuntu)
-        EC2_HOST = '44.203.66.201'  // Replace with your EC2 instance's public IP
+        EC2_USER = 'ec2-user'  // Update based on your EC2 AMI ('ubuntu' for Ubuntu)
+        EC2_HOST = '44.203.66.201'  // Replace with your EC2 instance public IP
         SSH_KEY = credentials('EC2_SSH_PRIVATE_KEY')  // Store EC2 SSH key in Jenkins credentials
     }
     stages {
@@ -26,7 +26,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $AWS_ECR_URI
+                        aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ECR_URI
                     '''
                 }
             }
@@ -49,8 +49,8 @@ pipeline {
                         set -e  # Exit immediately if a command fails
                         
                         echo "Logging into AWS ECR..."
-                        export AWS_REGION='$AWS_DEFAULT_REGION'
-                        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_URI
+                        export AWS_DEFAULT_REGION='us-east-1'
+                        aws ecr get-login-password --region \$AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ECR_URI
                         
                         echo "Stopping and removing existing container..."
                         docker stop flask-container || true
