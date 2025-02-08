@@ -4,8 +4,8 @@ pipeline {
         AWS_REGION = 'us-east-1'
         AWS_ACCOUNT_ID = '767828746131'
         ECR_REPO_NAME = 'netaproject/firstproject' // Replace with your ECR repository name
-        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')  // Retrieve credentials from Jenkins
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')  // Retrieve credentials from Jenkins
+        AWS_ACCESS_KEY_ID = credentials(1a8b4a50-b7eb-4d9d-af75-6226fde78a58)  // Retrieve credentials from Jenkins
+        AWS_SECRET_ACCESS_KEY = credentials(1a8b4a50-b7eb-4d9d-af75-6226fde78a58)  // Retrieve credentials from Jenkins
     }
     stages {
         stage('Checkout Code') {
