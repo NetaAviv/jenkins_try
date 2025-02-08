@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/NetaAviv/jenkins_try.git'
+                git branch: 'main', url: 'https://github.com/NetaAviv/jenkins_try.git'
             }
         }
         stage('Login to ECR') {
