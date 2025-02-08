@@ -23,7 +23,7 @@ pipeline {
                 script {
                     // Log in to AWS ECR
                     sh '''
-                        $(aws ecr get-login --no-include-email --region $AWS_REGION)
+                        $(aws ecr get-login --no-include-email --region us-east-1)
                     '''
                     
                     // Build the Docker image from the Dockerfile
