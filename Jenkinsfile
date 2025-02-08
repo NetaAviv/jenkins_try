@@ -2,8 +2,10 @@ pipeline {
     agent any
     environment {
         AWS_REGION = 'us-east-1'
-        AWS_ACCOUNT_ID = '767828746131'  // Replace with your AWS Account ID
+        AWS_ACCOUNT_ID = '767828746131'
         ECR_REPO_NAME = 'netaproject/firstproject' // Replace with your ECR repository name
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')  // Retrieve credentials from Jenkins
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')  // Retrieve credentials from Jenkins
     }
     stages {
         stage('Checkout Code') {
@@ -15,9 +17,11 @@ pipeline {
         stage('Login to ECR') {
             steps {
                 script {
-                    // Log in to AWS ECR using AWS CLI (assuming you've configured AWS CLI using aws configure)
+                    // Log in to AWS ECR using AWS CLI (credentials are now passed as environment variables)
                     sh '''
                         aws configure set region $AWS_REGION
+                        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+                        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
                         aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
                     '''
                 }
