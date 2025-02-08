@@ -5,9 +5,8 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')  
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')  
         AWS_DEFAULT_REGION = 'us-east-1'
-        EC2_USER = 'ec2-user'  // Update based on your EC2 AMI ('ubuntu' for Ubuntu)
-        EC2_HOST = '44.203.66.201'  // Replace with your EC2 instance public IP
-        SSH_KEY = credentials('EC2_SSH_PRIVATE_KEY')  // Store EC2 SSH key in Jenkins credentials
+        EC2_USER = 'ec2-user'  // Change if using Ubuntu AMI ('ubuntu')
+        EC2_HOST = '44.203.66.201'  // Replace with your EC2 public IP
     }
     stages {
         stage('Checkout') {
@@ -43,26 +42,28 @@ pipeline {
         }
         stage('Deploy to EC2') {
             steps {
-                script {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_HOST << 'EOF'
-                        set -e  # Exit immediately if a command fails
-                        
-                        echo "Logging into AWS ECR..."
-                        export AWS_DEFAULT_REGION='us-east-1'
-                        aws ecr get-login-password --region \$AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ECR_URI
-                        
-                        echo "Stopping and removing existing container..."
-                        docker stop flask-container || true
-                        docker rm flask-container || true
+                withCredentials([sshUserPrivateKey(credentialsId: 'EC2_SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY')]) {
+                    script {
+                        sh '''
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_HOST << 'EOF'
+                            set -e  # Exit on error
 
-                        echo "Pulling latest Docker image..."
-                        docker pull $AWS_ECR_URI:latest
+                            echo "Logging into AWS ECR..."
+                            export AWS_DEFAULT_REGION="us-east-1"
+                            aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ECR_URI
 
-                        echo "Running new container..."
-                        docker run -d -p 5000:5000 --name flask-container $AWS_ECR_URI:latest
-                        EOF
-                    """
+                            echo "Stopping existing container..."
+                            docker stop flask-container || true
+                            docker rm flask-container || true
+
+                            echo "Pulling latest Docker image..."
+                            docker pull $AWS_ECR_URI:latest
+
+                            echo "Running new container..."
+                            docker run -d -p 5000:5000 --name flask-container $AWS_ECR_URI:latest
+                            EOF
+                        '''
+                    }
                 }
             }
         }
