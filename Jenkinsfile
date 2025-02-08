@@ -4,7 +4,7 @@ pipeline {
     environment {
         // Define the AWS region, ECR repository, and Docker image name
         AWS_REGION = 'us-east-1'  // change to your AWS region
-        ECR_REPOSITORY = 'my-flask-app-repo'  // change to your ECR repository name
+        ECR_REPOSITORY = 'netaproject/firstproject'  // change to your ECR repository name
         IMAGE_NAME = 'my-flask-app'  // change to your desired image name
         AWS_ACCOUNT_ID = '767828746131'// your AWS account ID
         DOCKER_TAG = 'latest'  // change to the desired image tag
